@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            background-image: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS0BetrZC3fcqyek7c650ztHDm85AoBKhVQyQ&s");
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-blend-mode: multiply;
+            overflow: hidden;
+        }
+
+        nav {
+            margin: 25px;
+            padding-right: 35px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 40px;
+        }
+
+        nav a {
+            color: rgb(255, 255, 255);
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 27px;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+            text-shadow: 2px 2px black;
+        }
+
+        .layout-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin: 50px;
+            padding-top: 68px;
+        }
+
+        .container {
+            width: 40%;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333333;
+            margin-bottom: 10px;
+        }
+
+        .chatbox {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        #chat-log {
+            flex-grow: 1;
+            overflow-y: auto;
+            border: 1px solid #dddddd;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            font-size: 14px;
+            line-height: 1.4;
+            height: 200px; /* Fixed height for chat log */
+        }
+
+        .message {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+            text-align: right;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+            text-align: left;
+        }
+
+        .message p {
+            margin: 0;
+            padding: 8px 12px;
+            border-radius: 15px;
+        }
+
+        .message.user p {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .message.bot p {
+            background-color: #e9ecef;
+            color: black;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        input {
+            flex-grow: 1;
+            height: 40px;
+            padding: 5px 10px;
+            font-size: 14px;
+            border: 1px solid #cccccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 15px;
+            font-size: 14px;
+            color: #ffffff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            height: 40px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .robot-container {
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .robot-container img {
+            width: 300px;
+            height: auto;
+        }
+
+        .Intro {
+            margin: 10px 0 0;
+            color: rgb(83, 32, 61);
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="#Log in">Log in</a>
+        <a href="#Sign Up">Sign Up</a>
+        <a href="#Contact">Contact</a>
+        <a href="#About us">About us</a>
+    </nav>
+
+    <div class="layout-container">
+        
+        <div class="container">
+            <h1>Campus Chatbot</h1>
+            <div class="chatbox">
+                <div id="chat-log">
+                    
+                </div>
+                <div class="input-area">
+                    <input type="text" id="user-input" placeholder="Ask me something about the campus...">
+                    <button onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="robot-container">
+            <img src="{{ url_for('static', filename='images/image copy.png') }}" alt="Robot">
+            <p class = "Intro">Hii, I am Sooki!</p>
+            <p class = "Intro">Explore our campus with me</p>
+        </div>
+    </div>
+        <script>
+        async function sendMessage() {
+            const userInput = document.getElementById("user-input");
+            const message = userInput.value.trim();
+            const chatLog = document.getElementById("chat-log");
+            
+            if (!message) return;
+            
+            // Add user message
+            chatLog.innerHTML += `
+                <div class="message user">
+                    <p>${message}</p>
+                </div>
+            `;
+            
+            userInput.value = "";
+            chatLog.scrollTop = chatLog.scrollHeight;
+            
+            try {
+                const response = await fetch("/chat", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ message })
+                });
+                
+                const data = await response.json();
+                
+                // Add bot response
+                chatLog.innerHTML += `
+                    <div class="message bot">
+                        <p>${data.response}</p>
+                    </div>
+                `;
+                
+                chatLog.scrollTop = chatLog.scrollHeight;
+            } catch (error) {
+                console.error("Error:", error);
+                chatLog.innerHTML += `
+                    <div class="message bot">
+                        <p>Sorry, there was an error processing your request.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Add initial greeting
+        window.onload = () => {
+            const chatLog = document.getElementById("chat-log");
+            chatLog.innerHTML += `
+                <div class="message bot">
+                    <p>Hello! I'm Sooki, your campus navigation assistant. How can I help you today?</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
+
+
+
